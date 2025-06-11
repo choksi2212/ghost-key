@@ -37,7 +37,7 @@ A next-generation cybersecurity platform that combines **keystroke dynamics** an
 
 ## 🏗️ System Architecture
 
-### High-Level Architecture
+### 🖥️High-Level Architecture
 
 ```mermaid
 graph TB
@@ -76,7 +76,7 @@ graph TB
     P --> Q
 ```
 
-### Component Architecture
+### 🧩Component Architecture
 
 ```mermaid
 graph LR
@@ -107,7 +107,7 @@ graph LR
     N --> S
 ```
 
-### Data Flow Architecture
+### ➡️Data Flow Architecture
 
 ```mermaid
 sequenceDiagram
@@ -136,7 +136,7 @@ sequenceDiagram
     F->>U: Access granted/denied
 ```
 
-### Technology Stack
+### 🧠Technology Stack
 
 | Layer | Technology | Purpose |
 |-------|------------|---------|
