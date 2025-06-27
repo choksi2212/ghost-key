@@ -1,19 +1,19 @@
 import Meyda from "meyda"
 
-// Feature extraction configuration
+// Audio processing configuration - these values work well for voice
 const FRAME_SIZE = 1024
 const HOP_SIZE = 512
 const SAMPLE_RATE = 44100
 
-// Feature sets to extract
+// Feature sets we want to extract from audio
 const SPECTRAL_FEATURES = ["mfcc", "spectralCentroid", "spectralFlatness", "spectralRolloff", "spectralFlux"]
 const VOICE_QUALITY_FEATURES = ["perceptualSpread", "perceptualSharpness", "spectralKurtosis"]
 const TEMPORAL_FEATURES = ["zcr", "rms", "energy"]
 
-// All features to extract
+// Combine all features for extraction
 const ALL_FEATURES = [...SPECTRAL_FEATURES, ...VOICE_QUALITY_FEATURES, ...TEMPORAL_FEATURES]
 
-// Interface for extracted voice features
+// Interface for raw voice features from each frame
 export interface VoiceFeatures {
   mfcc: number[]
   spectralCentroid: number
@@ -37,7 +37,7 @@ export interface VoiceFeatures {
   formants?: number[]
 }
 
-// Interface for aggregated features
+// Interface for aggregated features across all frames
 export interface AggregatedVoiceFeatures {
   mfccMean: number[]
   mfccVariance: number[]
@@ -71,7 +71,7 @@ export interface AggregatedVoiceFeatures {
   formantsVariance?: number[]
 }
 
-// Interface for robust similarity results
+// Interface for robust similarity comparison results
 export interface RobustSimilarityResult {
   overallSimilarity: number
   pitchNormalizedSimilarity: number
@@ -89,7 +89,8 @@ export interface RobustSimilarityResult {
 }
 
 /**
- * Converts an audio blob to an AudioBuffer for processing
+ * Convert audio blob to AudioBuffer for processing
+ * This is where the magic starts...
  */
 export async function blobToAudioBuffer(blob: Blob): Promise<AudioBuffer> {
   const arrayBuffer = await blob.arrayBuffer()
@@ -98,14 +99,14 @@ export async function blobToAudioBuffer(blob: Blob): Promise<AudioBuffer> {
 }
 
 /**
- * Normalize pitch features to handle voice changes
+ * Normalize pitch features to handle voice variations
+ * People's voices change throughout the day, so we need to be flexible
  */
 function normalizePitchFeatures(features: AggregatedVoiceFeatures): AggregatedVoiceFeatures {
   const normalized = { ...features }
 
-  // Normalize pitch to relative values if available
+  // Convert pitch to log scale for better comparison
   if (features.pitchMean && features.pitchMean > 0) {
-    // Convert to log scale for better pitch comparison
     normalized.pitchMean = Math.log(features.pitchMean)
   }
 
@@ -114,13 +115,13 @@ function normalizePitchFeatures(features: AggregatedVoiceFeatures): AggregatedVo
 
 /**
  * Normalize tempo-related features
+ * Speaking rate can vary based on mood, stress, etc.
  */
 function normalizeTempoFeatures(features: AggregatedVoiceFeatures): AggregatedVoiceFeatures {
   const normalized = { ...features }
 
-  // Normalize speaking rate and temporal features
+  // Normalize speaking rate
   if (features.speakingRate && features.speakingRate > 0) {
-    // Convert to relative tempo
     normalized.speakingRate = Math.log(features.speakingRate)
   }
 
@@ -134,11 +135,12 @@ function normalizeTempoFeatures(features: AggregatedVoiceFeatures): AggregatedVo
 
 /**
  * Normalize energy and spectral features
+ * Microphone distance and volume can affect these
  */
 function normalizeSpectralFeatures(features: AggregatedVoiceFeatures): AggregatedVoiceFeatures {
   const normalized = { ...features }
 
-  // Normalize energy features
+  // Log normalize energy features to handle volume differences
   if (features.energyMean > 0) {
     normalized.energyMean = Math.log(features.energyMean + 1)
   }
@@ -147,7 +149,7 @@ function normalizeSpectralFeatures(features: AggregatedVoiceFeatures): Aggregate
     normalized.rmsMean = Math.log(features.rmsMean + 1)
   }
 
-  // Normalize spectral centroid (related to brightness)
+  // Normalize spectral centroid (brightness of voice)
   if (features.spectralCentroidMean > 0) {
     normalized.spectralCentroidMean = Math.log(features.spectralCentroidMean)
   }
@@ -157,6 +159,7 @@ function normalizeSpectralFeatures(features: AggregatedVoiceFeatures): Aggregate
 
 /**
  * Calculate robust similarity score that handles voice variations
+ * This is the heart of the voice authentication system
  */
 export function calculateRobustSimilarityScore(
   features1: AggregatedVoiceFeatures,
@@ -172,7 +175,7 @@ export function calculateRobustSimilarityScore(
   const spectralNorm1 = normalizeSpectralFeatures(features1)
   const spectralNorm2 = normalizeSpectralFeatures(features2)
 
-  // Calculate MFCC similarity (most robust feature)
+  // Calculate MFCC similarity (most robust feature for voice)
   let mfccDistance = 0
   const mfccLength = Math.min(features1.mfccMean.length, features2.mfccMean.length)
   for (let i = 0; i < mfccLength; i++) {
@@ -190,7 +193,7 @@ export function calculateRobustSimilarityScore(
   const zcrDiff = Math.abs(tempoNorm1.zcrMean - tempoNorm2.zcrMean)
   const energyDiff = Math.abs(spectralNorm1.energyMean - spectralNorm2.energyMean)
 
-  // Calculate pitch similarity (if available)
+  // Calculate pitch similarity if available
   let pitchDiff: number | null = null
   if (pitchNorm1.pitchMean && pitchNorm2.pitchMean) {
     pitchDiff = Math.abs(pitchNorm1.pitchMean - pitchNorm2.pitchMean)
@@ -200,7 +203,7 @@ export function calculateRobustSimilarityScore(
   const perceptualSpreadDiff = Math.abs(features1.perceptualSpreadMean - features2.perceptualSpreadMean)
   const perceptualSharpnessDiff = Math.abs(features1.perceptualSharpnessMean - features2.perceptualSharpnessMean)
 
-  // Weighted similarity calculations with robustness focus
+  // Weighted similarity calculations - MFCC gets highest weight as it's most reliable
 
   // MFCC similarity (highest weight - most robust)
   const mfccSimilarity = Math.max(0, 1 - mfccDistance / 5.0)
@@ -223,7 +226,7 @@ export function calculateRobustSimilarityScore(
   // Pitch similarity (lower weight - highly variable)
   const pitchSimilarity = pitchDiff !== null ? Math.max(0, 1 - pitchDiff / 1.5) : 0.7 // Default if no pitch
 
-  // Calculate normalized similarities
+  // Calculate normalized similarities for different scenarios
   const pitchNormalizedSimilarity = mfccSimilarity * 0.7 + spectralSimilarity * 0.2 + pitchSimilarity * 0.1
   const tempoNormalizedSimilarity = mfccSimilarity * 0.6 + spectralSimilarity * 0.3 + tempoSimilarity * 0.1
 
@@ -278,17 +281,17 @@ export function calculateSimilarityScore(
 }
 
 /**
- * Extracts voice features from an audio buffer using Meyda
+ * Extract voice features from an audio buffer using Meyda
  */
 export function extractFeaturesFromAudioBuffer(audioBuffer: AudioBuffer): VoiceFeatures[] {
-  // Convert AudioBuffer to a format Meyda can process
+  // Convert AudioBuffer to format Meyda can process
   const audioData = audioBuffer.getChannelData(0)
   const features: VoiceFeatures[] = []
 
-  // Initialize Meyda analyzer
+  // Set up Meyda
   Meyda.bufferSize = FRAME_SIZE
 
-  // Process audio in frames
+  // Process audio in overlapping frames
   for (let i = 0; i < audioData.length - FRAME_SIZE; i += HOP_SIZE) {
     const frame = audioData.slice(i, i + FRAME_SIZE)
 
@@ -301,18 +304,13 @@ export function extractFeaturesFromAudioBuffer(audioBuffer: AudioBuffer): VoiceF
 }
 
 /**
- * Calculate pitch (F0) statistics from audio data
- * This is a simplified implementation - a real one would use more sophisticated algorithms
+ * Calculate pitch statistics from audio data
+ * This is simplified - a real implementation would use YIN or CREPE
  */
 export function calculatePitchStatistics(audioBuffer: AudioBuffer): { mean: number; variance: number; range: number } {
-  // This would normally use a pitch detection algorithm like YIN or CREPE
-  // For simplicity, we're using a placeholder implementation
+  // TODO: Implement proper pitch detection algorithm
+  // For now, using placeholder values that simulate realistic pitch data
 
-  // In a real implementation, you would:
-  // 1. Apply a pitch detection algorithm to get F0 contour
-  // 2. Calculate statistics on the F0 values
-
-  // Placeholder values
   return {
     mean: 120 + Math.random() * 30, // Simulated mean pitch around 120-150 Hz
     variance: 10 + Math.random() * 5,
@@ -321,16 +319,13 @@ export function calculatePitchStatistics(audioBuffer: AudioBuffer): { mean: numb
 }
 
 /**
- * Calculate jitter (pitch variation) and shimmer (amplitude variation)
- * This is a simplified implementation
+ * Calculate jitter and shimmer (voice quality measures)
+ * This is simplified for now
  */
 export function calculateJitterAndShimmer(audioBuffer: AudioBuffer): { jitter: number; shimmer: number } {
-  // In a real implementation, you would:
-  // 1. Detect pitch periods
-  // 2. Calculate variations between consecutive periods (jitter)
-  // 3. Calculate amplitude variations (shimmer)
+  // TODO: Implement proper jitter/shimmer calculation
+  // Would need pitch period detection first
 
-  // Placeholder values
   return {
     jitter: 0.01 + Math.random() * 0.01,
     shimmer: 0.05 + Math.random() * 0.03,
@@ -339,17 +334,18 @@ export function calculateJitterAndShimmer(audioBuffer: AudioBuffer): { jitter: n
 
 /**
  * Aggregate frame-by-frame features into a single feature vector
+ * This is where we go from many frames to one representative set of features
  */
 export function aggregateFeatures(features: VoiceFeatures[]): AggregatedVoiceFeatures {
   if (features.length === 0) {
     throw new Error("No features to aggregate")
   }
 
-  // Initialize with the structure of the first feature
+  // Initialize arrays for MFCC aggregation
   const mfccSums = new Array(features[0].mfcc.length).fill(0)
   const mfccSquareSums = new Array(features[0].mfcc.length).fill(0)
 
-  // Sums for calculating means
+  // Initialize sums for other features
   let spectralCentroidSum = 0
   let spectralFlatnessSum = 0
   let spectralRolloffSum = 0
@@ -361,7 +357,7 @@ export function aggregateFeatures(features: VoiceFeatures[]): AggregatedVoiceFea
   let rmsSum = 0
   let energySum = 0
 
-  // Sums of squares for calculating variances
+  // Sums of squares for variance calculation
   let spectralCentroidSumSq = 0
   let spectralFlatnessSumSq = 0
   let spectralRolloffSumSq = 0
@@ -373,9 +369,9 @@ export function aggregateFeatures(features: VoiceFeatures[]): AggregatedVoiceFea
   let rmsSumSq = 0
   let energySumSq = 0
 
-  // Calculate sums and sums of squares
+  // Accumulate sums and sums of squares
   for (const feature of features) {
-    // MFCC
+    // MFCC features
     for (let i = 0; i < feature.mfcc.length; i++) {
       mfccSums[i] += feature.mfcc[i]
       mfccSquareSums[i] += feature.mfcc[i] * feature.mfcc[i]
@@ -472,7 +468,8 @@ export function aggregateFeatures(features: VoiceFeatures[]): AggregatedVoiceFea
 }
 
 /**
- * Process audio blob and extract all voice features (optimized version)
+ * Main function to process audio blob and extract all voice features
+ * This is optimized for speed while maintaining accuracy
  */
 export async function processVoiceAudio(blob: Blob): Promise<{
   features: AggregatedVoiceFeatures
@@ -485,7 +482,7 @@ export async function processVoiceAudio(blob: Blob): Promise<{
     const audioBuffer = await blobToAudioBuffer(blob)
     console.log("Audio buffer created, duration:", audioBuffer.duration, "seconds")
 
-    // Use a smaller frame size for faster processing
+    // Use smaller frame size for faster processing
     const FAST_FRAME_SIZE = 512
     const FAST_HOP_SIZE = 256
 
@@ -504,7 +501,7 @@ export async function processVoiceAudio(blob: Blob): Promise<{
       rawFeatures[rawFeatures.length - 1].shimmer = shimmer
     }
 
-    // Aggregate features
+    // Aggregate all features
     const aggregatedFeatures = aggregateFeatures(rawFeatures)
 
     // Add additional aggregated features
@@ -532,24 +529,25 @@ export async function processVoiceAudio(blob: Blob): Promise<{
 
 /**
  * Faster feature extraction with reduced frame size
+ * Optimized for real-time performance
  */
 function extractFeaturesFromAudioBufferFast(audioBuffer: AudioBuffer, frameSize = 512, hopSize = 256): VoiceFeatures[] {
   const audioData = audioBuffer.getChannelData(0)
   const features: VoiceFeatures[] = []
 
-  // Limit the number of frames for faster processing
+  // Limit frames for faster processing
   const maxFrames = Math.min(50, Math.floor((audioData.length - frameSize) / hopSize))
 
-  // Initialize Meyda with smaller buffer size
+  // Set up Meyda with smaller buffer
   Meyda.bufferSize = frameSize
 
-  // Process fewer frames for speed
+  // Process frames
   for (let i = 0; i < maxFrames; i++) {
     const startIdx = i * hopSize
     const frame = audioData.slice(startIdx, startIdx + frameSize)
 
     try {
-      // Extract features using Meyda
+      // Extract core features using Meyda
       const mfcc = Meyda.extract("mfcc", frame) as number[]
       const spectralCentroid = Meyda.extract("spectralCentroid", frame) as number
       const spectralFlatness = Meyda.extract("spectralFlatness", frame) as number
@@ -574,7 +572,7 @@ function extractFeaturesFromAudioBufferFast(audioBuffer: AudioBuffer, frameSize 
       features.push(completeFeatures)
     } catch (error) {
       console.warn("Error extracting features for frame:", i, error)
-      // Add a default feature set if extraction fails
+      // Add default feature set if extraction fails
       features.push({
         mfcc: new Array(13).fill(Math.random() * 0.1), // Small random values for demo
         spectralCentroid: 1000 + Math.random() * 500,
@@ -595,14 +593,14 @@ function extractFeaturesFromAudioBufferFast(audioBuffer: AudioBuffer, frameSize 
 }
 
 /**
- * Faster pitch calculation
+ * Fast pitch calculation for real-time processing
  */
 function calculatePitchStatisticsFast(audioBuffer: AudioBuffer): { mean: number; variance: number; range: number } {
   // Simplified pitch calculation for speed
   const sampleRate = audioBuffer.sampleRate
   const audioData = audioBuffer.getChannelData(0)
 
-  // Use autocorrelation on a smaller sample for speed
+  // Use autocorrelation on a smaller sample
   const sampleSize = Math.min(4096, audioData.length)
   const sample = audioData.slice(0, sampleSize)
 
@@ -617,7 +615,7 @@ function calculatePitchStatisticsFast(audioBuffer: AudioBuffer): { mean: number;
 }
 
 /**
- * Faster jitter and shimmer calculation
+ * Fast jitter and shimmer calculation
  */
 function calculateJitterAndShimmerFast(audioBuffer: AudioBuffer): { jitter: number; shimmer: number } {
   // Simplified calculation for speed
@@ -628,7 +626,8 @@ function calculateJitterAndShimmerFast(audioBuffer: AudioBuffer): { jitter: numb
 }
 
 /**
- * Quick feature extraction for real-time feedback (MUCH MORE PERMISSIVE)
+ * Quick validation for real-time feedback (very permissive)
+ * This is designed to accept almost any reasonable audio input
  */
 export async function quickProcessVoiceAudio(blob: Blob): Promise<boolean> {
   try {
@@ -661,7 +660,7 @@ export async function quickProcessVoiceAudio(blob: Blob): Promise<boolean> {
       // Just check if we can get audio data
       const audioData = audioBuffer.getChannelData(0)
 
-      // Very basic validation - just check if there's some audio data
+      // Very basic validation
       if (audioData.length < 512) {
         console.log("Audio data too short:", audioData.length)
         return false
@@ -677,15 +676,14 @@ export async function quickProcessVoiceAudio(blob: Blob): Promise<boolean> {
 
       console.log("RMS level:", rms)
 
-      // Very low threshold - almost any audio should pass
-      const isValid = rms > 0.0001 // Extremely low threshold
+      // Extremely low threshold - almost any audio should pass
+      const isValid = rms > 0.0001
       console.log("Audio validation result:", isValid)
 
       return isValid
     } catch (audioError) {
       console.error("Audio processing error:", audioError)
-      // If we can't process the audio, assume it's still valid
-      // This is very permissive - we're accepting almost anything
+      // If we can't process the audio, assume it's still valid (very permissive)
       return true
     }
   } catch (error) {

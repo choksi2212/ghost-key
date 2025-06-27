@@ -28,25 +28,25 @@ export function useKeystrokeAnalyzer() {
     const keystroke: KeystrokeEvent = {
       key: event.key,
       type,
-      timestamp: performance.now(),
+      timestamp: performance.now(), // High precision timing
     }
 
     setKeystrokeData((prev) => [...prev, keystroke])
   }, [])
 
   const extractFeatures = useCallback((data: KeystrokeEvent[]): ExtractedFeatures => {
-    // Separate keydown and keyup events
+    // Split events by type for easier processing
     const keydowns = data.filter((k) => k.type === "keydown")
     const keyups = data.filter((k) => k.type === "keyup")
 
-    // Create matched keys array (key, timestamp) for keydown events
+    // Create matched pairs of keydown events with their timestamps
     const matchedKeys = keydowns.map((k) => [k.key, k.timestamp] as [string, number])
 
     const holdTimes: number[] = []
-    const ddTimes: number[] = []
-    const udTimes: number[] = []
+    const ddTimes: number[] = [] // dwell times (down-down)
+    const udTimes: number[] = [] // flight times (up-down)
 
-    // Calculate hold times (key press to key release)
+    // Calculate hold times - time between press and release
     matchedKeys.forEach(([key, downTs]) => {
       const upEvent = keyups.find((u) => u.key === key && u.timestamp > downTs)
       if (upEvent) {
@@ -54,14 +54,14 @@ export function useKeystrokeAnalyzer() {
       }
     })
 
-    // Calculate dwell times (down-down times between consecutive key presses)
+    // Calculate dwell times - time between consecutive key presses
     for (let i = 0; i < matchedKeys.length - 1; i++) {
       const press1 = matchedKeys[i][1]
       const press2 = matchedKeys[i + 1][1]
       ddTimes.push(press2 - press1)
     }
 
-    // Calculate flight times (up-down times)
+    // Calculate flight times - time from key release to next key press
     for (let i = 0; i < matchedKeys.length - 1; i++) {
       const currentKey = matchedKeys[i][0]
       const currentDown = matchedKeys[i][1]
@@ -71,31 +71,31 @@ export function useKeystrokeAnalyzer() {
       if (currentUp) {
         udTimes.push(nextDown - currentUp.timestamp)
       } else {
-        // Fallback if no up event found
+        // Fallback if we can't find the up event
         udTimes.push(nextDown - currentDown)
       }
     }
 
-    // Calculate additional features
+    // Calculate derived metrics
     const totalTime =
       Math.max(
         holdTimes.reduce((sum, t) => sum + t, 0),
         ddTimes.reduce((sum, t) => sum + t, 0),
         udTimes.reduce((sum, t) => sum + t, 0),
-      ) || 0.001
+      ) || 0.001 // Avoid division by zero
 
-    const typingSpeed = matchedKeys.length / (totalTime / 1000)
+    const typingSpeed = matchedKeys.length / (totalTime / 1000) // keys per second
     const flightTime = udTimes.length > 0 ? udTimes.reduce((a, b) => a + b, 0) / udTimes.length : 0
     const errorRate = data.filter((k) => k.key === "Backspace").length
 
-    // Calculate press pressure (variance of hold times)
+    // Calculate press pressure variance (how consistent the hold times are)
     const meanHoldTime = holdTimes.length > 0 ? holdTimes.reduce((a, b) => a + b, 0) / holdTimes.length : 0
     const pressPressure =
       holdTimes.length > 0
         ? Math.sqrt(holdTimes.reduce((sum, t) => sum + Math.pow(t - meanHoldTime, 2), 0) / holdTimes.length)
         : 0
 
-    // Create feature vector (matching original Python implementation)
+    // Build feature vector to match the Python implementation
     const PASSWORD_LENGTH = 11
     const featureVector = [
       ...holdTimes.slice(0, PASSWORD_LENGTH),
@@ -107,7 +107,7 @@ export function useKeystrokeAnalyzer() {
       pressPressure,
     ]
 
-    // Pad with zeros if needed
+    // Pad with zeros if we don't have enough features
     while (featureVector.length < PASSWORD_LENGTH * 3 + 1) {
       featureVector.push(0)
     }
@@ -144,7 +144,7 @@ export function useKeystrokeAnalyzer() {
             },
             sampleCount,
             privacyMode,
-            rawData: privacyMode ? null : keystrokeData,
+            rawData: privacyMode ? null : keystrokeData, // Only include raw data if not in privacy mode
           }),
         })
 
@@ -161,7 +161,7 @@ export function useKeystrokeAnalyzer() {
   const authenticate = useCallback(async (username: string, features: ExtractedFeatures, password: string) => {
     try {
       console.log("Authenticating user:", username)
-      console.log("Features:", features.features.slice(0, 5), "...")
+      console.log("Features:", features.features.slice(0, 5), "...") // Log first 5 features for debugging
 
       const response = await fetch("/api/authenticate", {
         method: "POST",

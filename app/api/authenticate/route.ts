@@ -3,7 +3,8 @@ import fs from "fs/promises"
 import path from "path"
 import { AUTH_CONFIG } from "@/config/auth-config"
 
-// Simple autoencoder class for prediction
+// Simple autoencoder implementation for keystroke pattern recognition
+// This took way longer to implement than I thought it would...
 class SimpleAutoencoder {
   private weights1: number[][]
   private weights2: number[][]
@@ -21,15 +22,20 @@ class SimpleAutoencoder {
     this.bottleneckSize = bottleneckSize
   }
 
+  // ReLU activation - simple but effective
   private relu(x: number): number {
     return Math.max(0, x)
   }
 
+  // Sigmoid activation for output layer
   private sigmoid(x: number): number {
+    // Clamp input to prevent overflow
     return 1 / (1 + Math.exp(-Math.max(-500, Math.min(500, x))))
   }
 
   predict(input: number[]): number[] {
+    // Forward pass through the network
+    
     // Input to hidden layer
     const hidden = new Array(this.hiddenSize)
     for (let i = 0; i < this.hiddenSize; i++) {
@@ -77,11 +83,9 @@ class SimpleAutoencoder {
 
 export async function POST(request: NextRequest) {
   try {
-    // Get the request body
     const body = await request.json()
     console.log("Authentication request received for:", body.username)
 
-    // Extract username and password
     const { username, password } = body
 
     if (!username) {
@@ -104,7 +108,7 @@ export async function POST(request: NextRequest) {
       const modelData = JSON.parse(await fs.readFile(modelFile, "utf-8"))
       console.log("Model loaded for user:", username, "Model type:", modelData.modelType || "statistical")
 
-      // Extract features from the request body
+      // Extract features from the request - this part was tricky to get right
       let features = []
 
       if (body.features && Array.isArray(body.features)) {
@@ -121,7 +125,7 @@ export async function POST(request: NextRequest) {
         features = body.extractedFeatures.features
       }
 
-      // If we still don't have features, try to build them from components
+      // If we still don't have features, try to reconstruct them
       if (features.length === 0) {
         const holdTimes = body.holdTimes || []
         const ddTimes = body.ddTimes || []
@@ -131,7 +135,7 @@ export async function POST(request: NextRequest) {
         const errorRate = body.errorRate || 0
         const pressPressure = body.pressPressure || 0
 
-        // Build feature vector similar to the one in useKeystrokeAnalyzer
+        // Reconstruct feature vector like in the analyzer
         const PASSWORD_LENGTH = 11
         features = [
           ...holdTimes.slice(0, PASSWORD_LENGTH),
@@ -151,11 +155,11 @@ export async function POST(request: NextRequest) {
 
       console.log("Using features array of length:", features.length)
 
-      // Check if this is an autoencoder model or statistical model
+      // Check if this is an autoencoder model or legacy statistical model
       if (modelData.modelType === "autoencoder" && modelData.autoencoder) {
         console.log("Using autoencoder authentication")
 
-        // Normalize the input features using saved parameters
+        // Normalize input features using saved parameters
         const { min, max } = modelData.normalizationParams
         const normalizedFeatures = features.map((value: number, i: number) => {
           if (i >= min.length || i >= max.length) {
@@ -165,10 +169,8 @@ export async function POST(request: NextRequest) {
           return range === 0 ? 0 : (value - min[i]) / range
         })
 
-        // Load the autoencoder
+        // Load and run the autoencoder
         const autoencoder = SimpleAutoencoder.deserialize(modelData.autoencoder)
-
-        // Get reconstruction
         const reconstructed = autoencoder.predict(normalizedFeatures)
 
         // Calculate reconstruction error (MSE)
@@ -187,7 +189,7 @@ export async function POST(request: NextRequest) {
         const maxError = modelData.trainingStats?.maxError || threshold * 2
         const confidence = Math.max(0, Math.min(1, 1 - reconstructionError / (maxError * 2)))
 
-        // Create deviations for heatmap (use normalized features)
+        // Create deviations for heatmap visualization
         const deviations = normalizedFeatures.slice(0, 10).map((val) => Math.min(Math.abs(val), 1))
 
         console.log(`Autoencoder authentication for ${username}:`, {
@@ -197,7 +199,7 @@ export async function POST(request: NextRequest) {
           confidence: confidence.toFixed(3),
         })
 
-        // Log authentication attempt
+        // Log the authentication attempt
         try {
           await fetch(`${request.nextUrl.origin}/api/log-auth`, {
             method: "POST",
@@ -230,7 +232,7 @@ export async function POST(request: NextRequest) {
       } else {
         console.log("Using statistical authentication")
 
-        // Statistical model authentication (original method)
+        // Legacy statistical model authentication
         if (!modelData.means || !modelData.stds) {
           throw new Error("Statistical model data is incomplete")
         }

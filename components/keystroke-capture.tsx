@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useRef } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -16,6 +15,7 @@ import { AnomalyHeatmap } from "./anomaly-heatmap"
 import { VoiceRegistration } from "./voice-registration"
 import { VoiceAuthModal } from "./voice-auth-modal"
 
+// Constants - probably should move these to a config file at some point
 const PASSWORD_LENGTH = 11
 const SAMPLES_REQUIRED = 10
 
@@ -29,7 +29,7 @@ export function KeystrokeCapture() {
   const [showHeatmap, setShowHeatmap] = useState(false)
   const [heatmapData, setHeatmapData] = useState<number[]>([])
 
-  // Voice authentication states
+  // Voice auth related states - this got complicated fast
   const [failedAttempts, setFailedAttempts] = useState(0)
   const [showVoiceAuth, setShowVoiceAuth] = useState(false)
   const [showVoiceRegistration, setShowVoiceRegistration] = useState(false)
@@ -39,7 +39,7 @@ export function KeystrokeCapture() {
   const { captureKeystrokes, extractFeatures, trainModel, authenticate, resetCapture, isCapturing, keystrokeData } =
     useKeystrokeAnalyzer()
 
-  // Add Enter key handler
+  // Handle Enter key press - simple but effective
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault()
@@ -54,6 +54,7 @@ export function KeystrokeCapture() {
   }
 
   const handleAuth = async () => {
+    // Basic validation first
     if (!username || !password) {
       setResult({ type: "error", message: "Please enter both username and password" })
       return
@@ -62,7 +63,7 @@ export function KeystrokeCapture() {
     try {
       const features = extractFeatures(keystrokeData)
 
-      // Call the authenticate API directly
+      // Make the API call for authentication
       const response = await fetch("/api/authenticate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -70,9 +71,8 @@ export function KeystrokeCapture() {
       })
 
       const authResult = await response.json()
-      console.log("Auth result:", authResult)
+      console.log("Auth result:", authResult) // Debug logging - remove in production
 
-      // Handle the response based on the actual API structure
       if (authResult.authenticated) {
         setResult({
           type: "success",
@@ -80,9 +80,9 @@ export function KeystrokeCapture() {
         })
         setHeatmapData(authResult.deviations || [])
         setShowHeatmap(true)
-        setFailedAttempts(0) // Reset failed attempts on success
+        setFailedAttempts(0) // Reset counter on success
 
-        // Log the authentication attempt
+        // Log this attempt for audit purposes
         await logAuthAttempt(username, true, authResult.reconstructionError || 0)
       } else {
         const newFailedAttempts = failedAttempts + 1
@@ -95,10 +95,10 @@ export function KeystrokeCapture() {
         setHeatmapData(authResult.deviations || [])
         setShowHeatmap(true)
 
-        // Log the authentication attempt
+        // Log failed attempt
         await logAuthAttempt(username, false, authResult.reconstructionError || 0)
 
-        // Trigger voice authentication after 2 failed attempts
+        // Trigger voice auth after 2 failures - security measure
         if (newFailedAttempts >= 2) {
           setShowVoiceAuth(true)
           setResult({
@@ -135,7 +135,7 @@ export function KeystrokeCapture() {
             message: `✅ BIOMETRIC PROFILE CREATED\n🤖 Neural Network Trained for ${username}\n🔒 Security Clearance: ACTIVE`,
           })
           setSampleCount(0)
-          // Show voice registration after keystroke registration is complete
+          // Move to voice registration after keystroke training
           setShowVoiceRegistration(true)
         } else {
           setResult({
@@ -170,6 +170,7 @@ export function KeystrokeCapture() {
     })
   }
 
+  // Helper function to clear form and focus
   const resetForm = () => {
     setPassword("")
     if (passwordRef.current) {
@@ -177,6 +178,7 @@ export function KeystrokeCapture() {
     }
   }
 
+  // Audit logging function
   const logAuthAttempt = async (user: string, success: boolean, error: number) => {
     try {
       await fetch("/api/log-auth", {
@@ -196,7 +198,7 @@ export function KeystrokeCapture() {
     }
   }
 
-  // Show voice registration if in register mode and keystroke training is complete
+  // Show voice registration if we're in that flow
   if (showVoiceRegistration) {
     return <VoiceRegistration username={username} onComplete={handleVoiceRegistrationComplete} />
   }
@@ -257,7 +259,7 @@ export function KeystrokeCapture() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6 p-6 bg-slate-800/30 dark:bg-slate-900/30">
-          {/* Security Features Banner */}
+          {/* Security feature badges */}
           <div className="flex justify-center gap-4 flex-wrap">
             <div className="px-3 py-1 bg-cyan-500/10 text-cyan-300 rounded-full text-xs font-medium border border-cyan-500/30 backdrop-blur-sm flex items-center gap-1">
               <Fingerprint className="w-3 h-3" />
@@ -356,7 +358,7 @@ export function KeystrokeCapture() {
             </>
           )}
 
-          {/* Failed attempts warning */}
+          {/* Security alert for failed attempts */}
           {mode === "auth" && failedAttempts > 0 && failedAttempts < 2 && (
             <div className="p-3 bg-orange-500/10 rounded-lg border border-orange-500/30">
               <div className="flex items-center gap-2 text-orange-300 text-sm">
@@ -411,7 +413,7 @@ export function KeystrokeCapture() {
 
       {showHeatmap && heatmapData.length > 0 && <AnomalyHeatmap data={heatmapData} />}
 
-      {/* Voice Authentication Modal */}
+      {/* Voice auth modal */}
       <VoiceAuthModal
         isOpen={showVoiceAuth}
         onClose={() => setShowVoiceAuth(false)}

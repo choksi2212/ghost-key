@@ -3,16 +3,10 @@
 A next-generation cybersecurity platform that combines **keystroke dynamics** and **voice biometrics** for advanced behavioral authentication using deep learning autoencoders and machine learning algorithms.
 
 ![Platform Preview](https://img.shields.io/badge/Platform-Next.js-black?style=for-the-badge&logo=next.js)
-![AI Powered](https://img.shields.io/badge/AI-TensorFlow.js-geen?style=for-the-badge&logo=tensorflow)
+![AI Powered](https://img.shields.io/badge/AI-TensorFlow.js-green?style=for-the-badge&logo=tensorflow)
 ![Security](https://img.shields.io/badge/Security-Biometric-red?style=for-the-badge&logo=shield)
 ![Deep Learning](https://img.shields.io/badge/Deep%20Learning-PyTorch-important?style=for-the-badge&logo=pytorch)
 ![Cybersecurity](https://img.shields.io/badge/Cybersecurity-Infosec-darkgreen?style=for-the-badge&logo=protonmail)
-![Auditing](https://img.shields.io/badge/Auditing-Log%20Analysis-blueviolet?style=for-the-badge&logo=splunk)
-![Deep Learning](https://img.shields.io/badge/Deep%20Learning-TensorFlow-blue?style=for-the-badge&logo=tensorflow)
-
-
-
-
 
 ## 🌟 Features
 
@@ -37,7 +31,7 @@ A next-generation cybersecurity platform that combines **keystroke dynamics** an
 
 ## 🏗️ System Architecture
 
-### 🖥️High-Level Architecture
+### High-Level Architecture
 
 ```mermaid
 graph TB
@@ -76,67 +70,7 @@ graph TB
     P --> Q
 ```
 
-### 🧩Component Architecture
-
-```mermaid
-graph LR
-    subgraph "Frontend Components"
-        A[KeystrokeCapture] --> B[useKeystrokeAnalyzer]
-        C[VoiceRegistration] --> D[useVoiceAuth]
-        E[AuditDashboard] --> F[Analytics Engine]
-        G[AdminPanel] --> H[User Management]
-    end
-
-    subgraph "API Layer"
-        I["/api/authenticate"] --> J[Authentication Logic]
-        K["/api/train-model"] --> L[Model Training]
-        M["/api/voice/verify"] --> N[Voice Verification]
-        O["/api/admin/*"] --> P[Admin Operations]
-    end
-
-    subgraph "ML Models"
-        Q[Autoencoder Network]
-        R[Voice Feature Extractor]
-        S[Similarity Calculator]
-    end
-
-    B --> I
-    D --> M
-    J --> Q
-    N --> R
-    N --> S
-```
-
-### ➡️Data Flow Architecture
-
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant F as Frontend
-    participant A as API
-    participant ML as ML Engine
-    participant DB as Data Store
-    
-    Note over U,DB: Registration Flow
-    U->>F: Type password (5 samples)
-    F->>A: POST /api/train-model
-    A->>ML: Extract features
-    ML->>ML: Train autoencoder
-    ML->>DB: Save model
-    A->>F: Training complete
-    
-    Note over U,DB: Authentication Flow
-    U->>F: Type password
-    F->>A: POST /api/authenticate
-    A->>DB: Load user model
-    A->>ML: Extract features
-    ML->>ML: Calculate reconstruction error
-    ML->>A: Return similarity score
-    A->>F: Authentication result
-    F->>U: Access granted/denied
-```
-
-### 🧠Technology Stack
+### Technology Stack
 
 | Layer | Technology | Purpose |
 |-------|------------|---------|
@@ -170,25 +104,6 @@ sequenceDiagram
 | **Storage (per user)** | 847KB ± 156KB | < 1MB target |
 | **CPU Usage (authentication)** | 8.3% ± 2.7% | < 10% target |
 | **Throughput** | 450 auth/min | > 400 auth/min target |
-
-### Feature Extraction Performance
-
-| Component | Processing Time | Features Extracted |
-|-----------|----------------|-------------------|
-| **Keystroke Analysis** | 23ms ± 8ms | 32 features |
-| **Voice Processing** | 156ms ± 34ms | 52 features |
-| **MFCC Extraction** | 89ms ± 21ms | 13 coefficients |
-| **Spectral Analysis** | 67ms ± 15ms | 12 features |
-
-### Scalability Metrics
-
-| Users | Memory Usage | Response Time | Success Rate |
-|-------|-------------|---------------|--------------|
-| 1-10 | 45MB | 165ms | 98.2% |
-| 11-50 | 187MB | 198ms | 97.8% |
-| 51-100 | 342MB | 234ms | 97.1% |
-| 101-500 | 1.2GB | 287ms | 96.4% |
-| 501-1000 | 2.1GB | 345ms | 95.8% |
 
 ## 🤖 Machine Learning Pipeline
 
@@ -235,33 +150,6 @@ Optimizer: Custom Gradient Descent
 Learning Rate: 0.01
 Epochs: 200
 Batch Size: All samples (small dataset)
-```
-
-### Voice Biometrics Pipeline
-
-```mermaid
-graph LR
-    A[Audio Input] --> B[Preprocessing]
-    B --> C[Frame Segmentation]
-    C --> D[Feature Extraction]
-    D --> E[Feature Aggregation]
-    E --> F[Similarity Calculation]
-    F --> G[Confidence Scoring]
-    G --> H[Authentication Decision]
-    
-    subgraph "Audio Features"
-        I[MFCC x13]
-        J[Spectral x12]
-        K[Prosodic x8]
-        L[Temporal x6]
-        M[Voice Quality x13]
-    end
-    
-    D --> I
-    D --> J
-    D --> K
-    D --> L
-    D --> M
 ```
 
 ### Feature Engineering Details
@@ -312,16 +200,6 @@ graph LR
 - **Anomaly Detection**: Real-time pattern analysis
 - **Session Management**: Secure token handling
 - **Audit Logging**: Comprehensive access trails
-
-### Compliance Framework
-
-| Standard | Compliance Level | Implementation |
-|----------|-----------------|----------------|
-| **GDPR** | Full | Data portability, right to deletion |
-| **CCPA** | Full | Privacy controls, data transparency |
-| **SOX** | Partial | Audit trails, access logging |
-| **HIPAA** | Partial | Data encryption, access controls |
-| **ISO 27001** | Framework | Security management system |
 
 ## 🚀 Quick Start
 
@@ -385,28 +263,6 @@ export const AUTH_CONFIG = {
 } as const
 ```
 
-### Performance Tuning
-
-```typescript
-// Autoencoder hyperparameters
-const AUTOENCODER_CONFIG = {
-  hiddenSize: 16,        // Hidden layer neurons
-  bottleneckSize: 8,     // Bottleneck layer neurons
-  learningRate: 0.01,    // Training learning rate
-  epochs: 200,           // Training iterations
-  batchSize: 'all',      // Batch processing size
-}
-
-// Voice processing parameters
-const VOICE_CONFIG = {
-  frameSize: 1024,       // Audio frame size
-  hopSize: 512,          // Frame overlap
-  sampleRate: 44100,     // Audio sample rate
-  maxFrames: 50,         // Processing limit
-}
-```
-
-
 ## 🛠️ Development
 
 ### Project Structure
@@ -418,53 +274,24 @@ keystroke-auth-web/
 │   │   ├── authenticate/       # Authentication endpoint
 │   │   ├── train-model/        # Model training endpoint
 │   │   ├── voice/             # Voice authentication APIs
-│   │   │   ├── register/      # Voice registration
-│   │   │   └── verify/        # Voice verification
-│   │   ├── auth-logs/         # Audit log retrieval
-│   │   ├── delete-user-data/  # User data deletion
-│   │   ├── export-logs/       # Log export functionality
-│   │   └── list-users/        # User enumeration
+│   │   └── ...
 │   ├── page.tsx               # Main application page
 │   ├── layout.tsx             # App layout
 │   └── globals.css            # Global styles
 ├── components/
 │   ├── keystroke-capture.tsx  # Main authentication component
 │   ├── voice-registration.tsx # Voice enrollment interface
-│   ├── voice-auth-modal.tsx   # Voice authentication modal
 │   ├── audit-dashboard.tsx    # Security monitoring dashboard
-│   ├── admin-panel.tsx        # System administration panel
-│   ├── anomaly-heatmap.tsx    # Visualization component
-│   ├── session-report.tsx     # Session reporting
-│   ├── theme-toggle.tsx       # Dark/light mode toggle
-│   └── ui/                    # Reusable UI components
-│       ├── button.tsx
-│       ├── card.tsx
-│       ├── input.tsx
-│       └── ...
+│   └── ...
 ├── hooks/
 │   ├── use-keystroke-analyzer.ts  # Keystroke processing logic
 │   ├── use-voice-auth.ts          # Voice processing logic
-│   ├── use-mobile.tsx             # Mobile detection
-│   └── use-toast.ts               # Toast notifications
+│   └── ...
 ├── utils/
 │   └── voice-feature-extractor.ts # Audio feature extraction
 ├── config/
 │   └── auth-config.ts         # Configuration settings
-├── lib/
-│   └── utils.ts               # Utility functions
-├── models/                    # Generated ML models
-│   ├── [username]/
-│   │   ├── model.json         # Autoencoder model
-│   │   ├── samples/           # Training samples
-│   │   └── raw_data/          # Raw keystroke data
-│   └── voice_models/
-│       └── [username].json    # Voice profiles
-├── logs/
-│   └── access_log.csv         # Authentication audit logs
-├── package.json               # Dependencies and scripts
-├── tailwind.config.ts         # Tailwind CSS configuration
-├── tsconfig.json              # TypeScript configuration
-└── next.config.mjs            # Next.js configuration
+└── ...
 ```
 
 ### Contributing Guidelines
@@ -481,6 +308,7 @@ keystroke-auth-web/
 - **Documentation**: JSDoc for all public APIs
 - **Performance**: Lighthouse score > 90
 - **Security**: OWASP compliance
+
 ---
 
 **⭐ Star this repository if you find it useful!**
