@@ -23,6 +23,12 @@ export function KeystrokeCapture() {
   const [mode, setMode] = useState<"auth" | "register">("auth")
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+
+
+//by yas: checks if next iterated pass matches with the first pass if yes then next else exp error
+const [initialPassword, setInitialPassword] = useState<string | null>(null)
+
+
   const [result, setResult] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null)
   const [sampleCount, setSampleCount] = useState(0)
   const [privacyMode, setPrivacyMode] = useState(false)
@@ -116,41 +122,53 @@ export function KeystrokeCapture() {
   }
 
   const handleRegister = async () => {
-    if (!username || !password) {
-      setResult({ type: "error", message: "Please enter both username and password" })
-      return
-    }
-
-    try {
-      const features = extractFeatures(keystrokeData)
-      const success = await trainModel(username, features, sampleCount, privacyMode)
-
-      if (success) {
-        const newCount = sampleCount + 1
-        setSampleCount(newCount)
-
-        if (newCount >= SAMPLES_REQUIRED) {
-          setResult({
-            type: "success",
-            message: `✅ BIOMETRIC PROFILE CREATED\n🤖 Neural Network Trained for ${username}\n🔒 Security Clearance: ACTIVE`,
-          })
-          setSampleCount(0)
-          // Show voice registration after keystroke registration is complete
-          setShowVoiceRegistration(true)
-        } else {
-          setResult({
-            type: "info",
-            message: `📊 Biometric Sample ${newCount}/${SAMPLES_REQUIRED} Captured\n⌨️ Continue keystroke pattern analysis`,
-          })
-        }
-        resetCapture()
-      }
-    } catch (error) {
-      setResult({ type: "error", message: `🚨 TRAINING ERROR: ${error}` })
-    }
-
-    resetForm()
+  if (!username || !password) {
+    setResult({ type: "error", message: "Please enter both username and password" })
+    return
   }
+
+  if (initialPassword === null) {
+    // First password input — store it
+    setInitialPassword(password)
+  } else if (password !== initialPassword) {
+    // Mismatch with initial password — show error
+    setResult({ type: "error", message: "🚫 Password mismatch! Use the same passphrase as the first sample." })
+    resetForm()
+    return
+  }
+
+  try {
+    const features = extractFeatures(keystrokeData)
+    const success = await trainModel(username, features, sampleCount, privacyMode)
+
+    if (success) {
+      const newCount = sampleCount + 1
+      setSampleCount(newCount)
+
+      if (newCount >= SAMPLES_REQUIRED) {
+        setResult({
+          type: "success",
+          message: `✅ BIOMETRIC PROFILE CREATED\n🤖 Neural Network Trained for ${username}\n🔒 Security Clearance: ACTIVE`,
+        })
+        setSampleCount(0)
+        setInitialPassword(null) // Reset initial password for next user
+        setShowVoiceRegistration(true)
+      } else {
+        setResult({
+          type: "info",
+          message: `📊 Biometric Sample ${newCount}/${SAMPLES_REQUIRED} Captured\n⌨️ Continue keystroke pattern analysis`,
+        })
+      }
+
+      resetCapture()
+    }
+  } catch (error) {
+    setResult({ type: "error", message: `🚨 TRAINING ERROR: ${error}` })
+  }
+
+  resetForm()
+}
+  
 
   const handleVoiceAuthSuccess = () => {
     setFailedAttempts(0)
@@ -225,7 +243,10 @@ export function KeystrokeCapture() {
               <Button
                 variant={mode === "auth" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setMode("auth")}
+                onClick={() => {
+    setMode("auth")
+    setInitialPassword(null) // clear it when switching mode
+  }}
                 className={
                   mode === "auth"
                     ? "bg-cyan-600/80 hover:bg-cyan-500 text-white border-cyan-500/50"

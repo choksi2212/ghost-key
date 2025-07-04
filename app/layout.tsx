@@ -9,7 +9,6 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Keystroke Dynamic Authentication",
   description: "Advanced biometric authentication using machine learning analysis of typing patterns",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({
