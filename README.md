@@ -86,22 +86,22 @@ graph LR
         E[AuditDashboard] --> F[Analytics Engine]
         G[AdminPanel] --> H[User Management]
     end
-    
+
     subgraph "API Layer"
-        I[/api/authenticate] --> J[Authentication Logic]
-        K[/api/train-model] --> L[Model Training]
-        M[/api/voice/verify] --> N[Voice Verification]
-        O[/api/admin/*] --> P[Admin Operations]
+        I_API_AUTH["/api/authenticate"] --> J[Authentication Logic]
+        K_API_TRAIN["/api/train-model"] --> L[Model Training]
+        M_API_VERIFY["/api/voice/verify"] --> N[Voice Verification]
+        O_API_ADMIN["/api/admin/*"] --> P[Admin Operations]
     end
-    
+
     subgraph "ML Models"
         Q[Autoencoder Network]
         R[Voice Feature Extractor]
         S[Similarity Calculator]
     end
-    
-    B --> I
-    D --> M
+
+    B --> I_API_AUTH
+    D --> M_API_VERIFY
     J --> Q
     N --> R
     N --> S
