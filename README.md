@@ -336,13 +336,13 @@ graph LR
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/keystroke-auth-web.git
-   cd keystroke-auth-web
+   git clone https://github.com/yourusername/ghost-key.git
+   cd ghost-key
    ```
 
 2. **Install dependencies**
    ```bash
-   npm install
+   npm install --legacy-peer-deps
    ```
 
 3. **Start development server**
