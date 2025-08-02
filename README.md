@@ -164,7 +164,7 @@ sequenceDiagram
 
 | Metric | Value | Benchmark |
 |--------|-------|-----------|
-| **Authentication Latency** | 187ms ± 45ms | < 200ms target |
+| **Authentication Latency** | <90ms ± 45ms | < 200ms target |
 | **Model Training Time** | 4.2s ± 1.1s | < 5s target |
 | **Memory Usage (per user)** | 12.4MB ± 2.1MB | < 15MB target |
 | **Storage (per user)** | 847KB ± 156KB | < 1MB target |
