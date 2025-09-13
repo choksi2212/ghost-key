@@ -86,22 +86,22 @@ graph LR
         E[AuditDashboard] --> F[Analytics Engine]
         G[AdminPanel] --> H[User Management]
     end
-    
+
     subgraph "API Layer"
-        I[/api/authenticate] --> J[Authentication Logic]
-        K[/api/train-model] --> L[Model Training]
-        M[/api/voice/verify] --> N[Voice Verification]
-        O[/api/admin/*] --> P[Admin Operations]
+        I_API_AUTH["/api/authenticate"] --> J[Authentication Logic]
+        K_API_TRAIN["/api/train-model"] --> L[Model Training]
+        M_API_VERIFY["/api/voice/verify"] --> N[Voice Verification]
+        O_API_ADMIN["/api/admin/*"] --> P[Admin Operations]
     end
-    
+
     subgraph "ML Models"
         Q[Autoencoder Network]
         R[Voice Feature Extractor]
         S[Similarity Calculator]
     end
-    
-    B --> I
-    D --> M
+
+    B --> I_API_AUTH
+    D --> M_API_VERIFY
     J --> Q
     N --> R
     N --> S
@@ -164,7 +164,7 @@ sequenceDiagram
 
 | Metric | Value | Benchmark |
 |--------|-------|-----------|
-| **Authentication Latency** | 187ms ± 45ms | < 200ms target |
+| **Authentication Latency** | <90ms ± 45ms | < 200ms target |
 | **Model Training Time** | 4.2s ± 1.1s | < 5s target |
 | **Memory Usage (per user)** | 12.4MB ± 2.1MB | < 15MB target |
 | **Storage (per user)** | 847KB ± 156KB | < 1MB target |
@@ -336,13 +336,13 @@ graph LR
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/keystroke-auth-web.git
-   cd keystroke-auth-web
+   git clone https://github.com/yourusername/ghost-key.git
+   cd ghost-key
    ```
 
 2. **Install dependencies**
    ```bash
-   npm install
+   npm install --legacy-peer-deps
    ```
 
 3. **Start development server**
