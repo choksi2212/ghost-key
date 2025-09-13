@@ -1,0 +1,66 @@
+{
+  "sampleId": 0,
+  "timestamp": "2025-08-13T06:57:12.205Z",
+  "rawKeystrokes": [
+    {
+      "key": "Tab",
+      "type": "keyup",
+      "timestamp": 209600.2999999998
+    },
+    {
+      "key": "CapsLock",
+      "type": "keydown",
+      "timestamp": 209813.90000000037
+    },
+    {
+      "key": "CapsLock",
+      "type": "keyup",
+      "timestamp": 209902.2999999998
+    },
+    {
+      "key": "CapsLock",
+      "type": "keydown",
+      "timestamp": 210172.10000000056
+    },
+    {
+      "key": "CapsLock",
+      "type": "keyup",
+      "timestamp": 210278.60000000056
+    },
+    {
+      "key": "k",
+      "type": "keydown",
+      "timestamp": 210476.2000000002
+    },
+    {
+      "key": "k",
+      "type": "keyup",
+      "timestamp": 210572.7000000002
+    },
+    {
+      "key": "i",
+      "type": "keydown",
+      "timestamp": 210624.40000000037
+    },
+    {
+      "key": "i",
+      "type": "keyup",
+      "timestamp": 210714.90000000037
+    },
+    {
+      "key": "n",
+      "type": "keydown",
+      "timestamp": 210754.40000000037
+    },
+    {
+      "key": "g",
+      "type": "keydown",
+      "timestamp": 210842
+    },
+    {
+      "key": "n",
+      "type": "keyup",
+      "timestamp": 210884.60000000056
+    }
+  ]
+}

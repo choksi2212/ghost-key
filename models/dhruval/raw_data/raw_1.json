@@ -1,0 +1,51 @@
+{
+  "sampleId": 1,
+  "timestamp": "2025-09-02T05:57:08.164Z",
+  "rawKeystrokes": [
+    {
+      "key": "Meta",
+      "type": "keydown",
+      "timestamp": 113013.39999999851
+    },
+    {
+      "key": "k",
+      "type": "keydown",
+      "timestamp": 114684
+    },
+    {
+      "key": "k",
+      "type": "keyup",
+      "timestamp": 114761.79999999702
+    },
+    {
+      "key": "i",
+      "type": "keydown",
+      "timestamp": 114812.19999999553
+    },
+    {
+      "key": "i",
+      "type": "keyup",
+      "timestamp": 114901.59999999404
+    },
+    {
+      "key": "n",
+      "type": "keydown",
+      "timestamp": 114953.79999999702
+    },
+    {
+      "key": "g",
+      "type": "keydown",
+      "timestamp": 115057.39999999851
+    },
+    {
+      "key": "n",
+      "type": "keyup",
+      "timestamp": 115095.29999999702
+    },
+    {
+      "key": "g",
+      "type": "keyup",
+      "timestamp": 115178.59999999404
+    }
+  ]
+}

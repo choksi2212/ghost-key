@@ -1,0 +1,86 @@
+{
+  "sampleId": 1,
+  "timestamp": "2025-08-16T13:18:42.521Z",
+  "rawKeystrokes": [
+    {
+      "key": "Meta",
+      "type": "keydown",
+      "timestamp": 62378.69999999972
+    },
+    {
+      "key": "i",
+      "type": "keydown",
+      "timestamp": 64597.69999999972
+    },
+    {
+      "key": "i",
+      "type": "keyup",
+      "timestamp": 64683
+    },
+    {
+      "key": "Backspace",
+      "type": "keydown",
+      "timestamp": 64892.10000000009
+    },
+    {
+      "key": "Backspace",
+      "type": "keyup",
+      "timestamp": 64966.299999999814
+    },
+    {
+      "key": "Backspace",
+      "type": "keydown",
+      "timestamp": 65005.69999999972
+    },
+    {
+      "key": "Backspace",
+      "type": "keyup",
+      "timestamp": 65105.10000000009
+    },
+    {
+      "key": "Backspace",
+      "type": "keydown",
+      "timestamp": 65145.10000000009
+    },
+    {
+      "key": "Backspace",
+      "type": "keyup",
+      "timestamp": 65233.799999999814
+    },
+    {
+      "key": "k",
+      "type": "keydown",
+      "timestamp": 65315.69999999972
+    },
+    {
+      "key": "k",
+      "type": "keyup",
+      "timestamp": 65371.10000000009
+    },
+    {
+      "key": "i",
+      "type": "keydown",
+      "timestamp": 65445.299999999814
+    },
+    {
+      "key": "i",
+      "type": "keyup",
+      "timestamp": 65545.19999999972
+    },
+    {
+      "key": "n",
+      "type": "keydown",
+      "timestamp": 65639.1000000001
+    },
+    {
+      "key": "n",
+      "type": "keyup",
+      "timestamp": 65766.1000000001
+    },
+    {
+      "key": "g",
+      "type": "keydown",
+      "timestamp": 65809.29999999981
+    }
+  ]
+}

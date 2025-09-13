@@ -1,0 +1,76 @@
+{
+  "sampleId": 1,
+  "timestamp": "2025-09-13T03:52:52.998Z",
+  "rawKeystrokes": [
+    {
+      "key": "Alt",
+      "type": "keydown",
+      "timestamp": 62070.19999998808
+    },
+    {
+      "key": "k",
+      "type": "keydown",
+      "timestamp": 68551.69999998808
+    },
+    {
+      "key": "k",
+      "type": "keyup",
+      "timestamp": 68679
+    },
+    {
+      "key": "i",
+      "type": "keydown",
+      "timestamp": 68718.09999999404
+    },
+    {
+      "key": "i",
+      "type": "keyup",
+      "timestamp": 68807.09999999404
+    },
+    {
+      "key": "n",
+      "type": "keydown",
+      "timestamp": 68849.69999998808
+    },
+    {
+      "key": "g",
+      "type": "keydown",
+      "timestamp": 68988.69999998808
+    },
+    {
+      "key": "n",
+      "type": "keyup",
+      "timestamp": 69080.19999998808
+    },
+    {
+      "key": "o",
+      "type": "keydown",
+      "timestamp": 69128.09999999404
+    },
+    {
+      "key": "g",
+      "type": "keyup",
+      "timestamp": 69208.90000000596
+    },
+    {
+      "key": "o",
+      "type": "keyup",
+      "timestamp": 69253.5
+    },
+    {
+      "key": "Shift",
+      "type": "keydown",
+      "timestamp": 69304.30000001192
+    },
+    {
+      "key": "Shift",
+      "type": "keyup",
+      "timestamp": 69340.80000001192
+    },
+    {
+      "key": "Meta",
+      "type": "keydown",
+      "timestamp": 72490.40000000596
+    }
+  ]
+}

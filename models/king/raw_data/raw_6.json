@@ -1,0 +1,246 @@
+{
+  "sampleId": 6,
+  "timestamp": "2025-08-14T02:50:22.581Z",
+  "rawKeystrokes": [
+    {
+      "key": "i",
+      "type": "keydown",
+      "timestamp": 35497.29999999702
+    },
+    {
+      "key": "CapsLock",
+      "type": "keyup",
+      "timestamp": 35562.79999999702
+    },
+    {
+      "key": "i",
+      "type": "keyup",
+      "timestamp": 35594
+    },
+    {
+      "key": "n",
+      "type": "keydown",
+      "timestamp": 35671.29999999702
+    },
+    {
+      "key": "g",
+      "type": "keydown",
+      "timestamp": 35791.10000000149
+    },
+    {
+      "key": "n",
+      "type": "keyup",
+      "timestamp": 35867.10000000149
+    },
+    {
+      "key": "g",
+      "type": "keyup",
+      "timestamp": 35922.60000000149
+    },
+    {
+      "key": "o",
+      "type": "keydown",
+      "timestamp": 35953.39999999851
+    },
+    {
+      "key": "o",
+      "type": "keyup",
+      "timestamp": 36028.79999999702
+    },
+    {
+      "key": "2",
+      "type": "keydown",
+      "timestamp": 36087.10000000149
+    },
+    {
+      "key": "2",
+      "type": "keyup",
+      "timestamp": 36189.5
+    },
+    {
+      "key": "2",
+      "type": "keydown",
+      "timestamp": 36215.79999999702
+    },
+    {
+      "key": "2",
+      "type": "keyup",
+      "timestamp": 36344.5
+    },
+    {
+      "key": "1",
+      "type": "keydown",
+      "timestamp": 36424.89999999851
+    },
+    {
+      "key": "1",
+      "type": "keyup",
+      "timestamp": 36543.10000000149
+    },
+    {
+      "key": "2",
+      "type": "keydown",
+      "timestamp": 36615.69999999553
+    },
+    {
+      "key": "Shift",
+      "type": "keydown",
+      "timestamp": 36703.79999999702
+    },
+    {
+      "key": "@",
+      "type": "keyup",
+      "timestamp": 36723.89999999851
+    },
+    {
+      "key": "@",
+      "type": "keydown",
+      "timestamp": 36804.19999999553
+    },
+    {
+      "key": "Shift",
+      "type": "keyup",
+      "timestamp": 36857.89999999851
+    },
+    {
+      "key": "2",
+      "type": "keyup",
+      "timestamp": 36966.39999999851
+    },
+    {
+      "key": "Enter",
+      "type": "keyup",
+      "timestamp": 37053.10000000149
+    },
+    {
+      "key": "CapsLock",
+      "type": "keydown",
+      "timestamp": 37639.10000000149
+    },
+    {
+      "key": "K",
+      "type": "keydown",
+      "timestamp": 37740.79999999702
+    },
+    {
+      "key": "CapsLock",
+      "type": "keyup",
+      "timestamp": 37768.89999999851
+    },
+    {
+      "key": "CapsLock",
+      "type": "keydown",
+      "timestamp": 37807.39999999851
+    },
+    {
+      "key": "k",
+      "type": "keyup",
+      "timestamp": 37847
+    },
+    {
+      "key": "i",
+      "type": "keydown",
+      "timestamp": 37905.19999999553
+    },
+    {
+      "key": "CapsLock",
+      "type": "keyup",
+      "timestamp": 37954.5
+    },
+    {
+      "key": "i",
+      "type": "keyup",
+      "timestamp": 37999.39999999851
+    },
+    {
+      "key": "n",
+      "type": "keydown",
+      "timestamp": 38066.5
+    },
+    {
+      "key": "n",
+      "type": "keyup",
+      "timestamp": 38189.10000000149
+    },
+    {
+      "key": "g",
+      "type": "keydown",
+      "timestamp": 38217.5
+    },
+    {
+      "key": "o",
+      "type": "keydown",
+      "timestamp": 38285.19999999553
+    },
+    {
+      "key": "g",
+      "type": "keyup",
+      "timestamp": 38346.19999999553
+    },
+    {
+      "key": "o",
+      "type": "keyup",
+      "timestamp": 38396.29999999702
+    },
+    {
+      "key": "2",
+      "type": "keydown",
+      "timestamp": 38516
+    },
+    {
+      "key": "2",
+      "type": "keyup",
+      "timestamp": 38623.60000000149
+    },
+    {
+      "key": "2",
+      "type": "keydown",
+      "timestamp": 38654.29999999702
+    },
+    {
+      "key": "2",
+      "type": "keyup",
+      "timestamp": 38775.29999999702
+    },
+    {
+      "key": "1",
+      "type": "keydown",
+      "timestamp": 38849.5
+    },
+    {
+      "key": "1",
+      "type": "keyup",
+      "timestamp": 38966.69999999553
+    },
+    {
+      "key": "2",
+      "type": "keydown",
+      "timestamp": 39036.5
+    },
+    {
+      "key": "Shift",
+      "type": "keydown",
+      "timestamp": 39121.5
+    },
+    {
+      "key": "@",
+      "type": "keyup",
+      "timestamp": 39146.39999999851
+    },
+    {
+      "key": "@",
+      "type": "keydown",
+      "timestamp": 39234.79999999702
+    },
+    {
+      "key": "Shift",
+      "type": "keyup",
+      "timestamp": 39321.89999999851
+    },
+    {
+      "key": "2",
+      "type": "keyup",
+      "timestamp": 39383.39999999851
+    }
+  ]
+}

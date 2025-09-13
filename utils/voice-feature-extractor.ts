@@ -162,6 +162,16 @@ export function calculateRobustSimilarityScore(
   features1: AggregatedVoiceFeatures,
   features2: AggregatedVoiceFeatures,
 ): RobustSimilarityResult {
+  // Validate input features
+  if (
+    !features1.mfccMean ||
+    !features2.mfccMean ||
+    features1.mfccMean.length === 0 ||
+    features2.mfccMean.length === 0
+  ) {
+    throw new Error("Invalid MFCC features for comparison")
+  }
+
   // Apply different normalization strategies
   const pitchNorm1 = normalizePitchFeatures(features1)
   const pitchNorm2 = normalizePitchFeatures(features2)
@@ -172,7 +182,7 @@ export function calculateRobustSimilarityScore(
   const spectralNorm1 = normalizeSpectralFeatures(features1)
   const spectralNorm2 = normalizeSpectralFeatures(features2)
 
-  // Calculate MFCC similarity (most robust feature)
+  // Calculate MFCC similarity (most robust feature) - MORE STRICT
   let mfccDistance = 0
   const mfccLength = Math.min(features1.mfccMean.length, features2.mfccMean.length)
   for (let i = 0; i < mfccLength; i++) {
@@ -181,7 +191,7 @@ export function calculateRobustSimilarityScore(
   }
   mfccDistance = Math.sqrt(mfccDistance / mfccLength)
 
-  // Calculate spectral similarity
+  // Calculate spectral similarity - MORE STRICT
   const spectralCentroidDiff = Math.abs(spectralNorm1.spectralCentroidMean - spectralNorm2.spectralCentroidMean)
   const spectralFlatnessDiff = Math.abs(features1.spectralFlatnessMean - features2.spectralFlatnessMean)
   const spectralRolloffDiff = Math.abs(features1.spectralRolloffMean - features2.spectralRolloffMean)
@@ -200,42 +210,42 @@ export function calculateRobustSimilarityScore(
   const perceptualSpreadDiff = Math.abs(features1.perceptualSpreadMean - features2.perceptualSpreadMean)
   const perceptualSharpnessDiff = Math.abs(features1.perceptualSharpnessMean - features2.perceptualSharpnessMean)
 
-  // Weighted similarity calculations with robustness focus
+  // MUCH MORE STRICT similarity calculations
 
-  // MFCC similarity (highest weight - most robust)
-  const mfccSimilarity = Math.max(0, 1 - mfccDistance / 5.0)
+  // MFCC similarity (highest weight - most robust) - STRICTER THRESHOLD
+  const mfccSimilarity = Math.max(0, 1 - mfccDistance / 2.0) // Reduced from 5.0 to 2.0
 
-  // Spectral similarity (medium weight)
+  // Spectral similarity (medium weight) - STRICTER
   const spectralSimilarity = Math.max(
     0,
-    1 - ((0.4 * spectralCentroidDiff) / 2.0 + (0.3 * spectralFlatnessDiff) / 0.5 + (0.3 * spectralRolloffDiff) / 2.0),
+    1 - ((0.4 * spectralCentroidDiff) / 1.0 + (0.3 * spectralFlatnessDiff) / 0.3 + (0.3 * spectralRolloffDiff) / 1.0), // Stricter thresholds
   )
 
-  // Voice quality similarity (medium weight)
+  // Voice quality similarity (medium weight) - STRICTER
   const voiceQualitySimilarity = Math.max(
     0,
-    1 - ((0.5 * perceptualSpreadDiff) / 0.5 + (0.5 * perceptualSharpnessDiff) / 0.5),
+    1 - ((0.5 * perceptualSpreadDiff) / 0.3 + (0.5 * perceptualSharpnessDiff) / 0.3), // Stricter thresholds
   )
 
-  // Temporal similarity (lower weight - more variable)
-  const tempoSimilarity = Math.max(0, 1 - ((0.6 * zcrDiff) / 1.0 + (0.4 * energyDiff) / 2.0))
+  // Temporal similarity (lower weight - more variable) - STRICTER
+  const tempoSimilarity = Math.max(0, 1 - ((0.6 * zcrDiff) / 0.5 + (0.4 * energyDiff) / 1.0)) // Stricter thresholds
 
-  // Pitch similarity (lower weight - highly variable)
-  const pitchSimilarity = pitchDiff !== null ? Math.max(0, 1 - pitchDiff / 1.5) : 0.7 // Default if no pitch
+  // Pitch similarity (lower weight - highly variable) - STRICTER
+  const pitchSimilarity = pitchDiff !== null ? Math.max(0, 1 - pitchDiff / 1.0) : 0.5 // Stricter and lower default
 
   // Calculate normalized similarities
   const pitchNormalizedSimilarity = mfccSimilarity * 0.7 + spectralSimilarity * 0.2 + pitchSimilarity * 0.1
   const tempoNormalizedSimilarity = mfccSimilarity * 0.6 + spectralSimilarity * 0.3 + tempoSimilarity * 0.1
 
-  // Overall similarity with adaptive weighting
+  // Overall similarity with MORE STRICT weighting - emphasize MFCC more
   const overallSimilarity =
-    mfccSimilarity * 0.5 + // MFCC - most reliable
+    mfccSimilarity * 0.6 + // MFCC - increased weight for most reliable feature
     spectralSimilarity * 0.25 + // Spectral features
-    voiceQualitySimilarity * 0.15 + // Voice quality
-    tempoSimilarity * 0.05 + // Temporal features (least reliable)
-    pitchSimilarity * 0.05 // Pitch (least reliable)
+    voiceQualitySimilarity * 0.1 + // Voice quality - reduced weight
+    tempoSimilarity * 0.03 + // Temporal features - reduced weight
+    pitchSimilarity * 0.02 // Pitch - reduced weight
 
-  // Calculate confidence score based on feature consistency
+  // Calculate confidence score based on feature consistency - MORE STRICT
   const featureConsistency = [
     mfccSimilarity,
     spectralSimilarity,
@@ -247,7 +257,7 @@ export function calculateRobustSimilarityScore(
   const meanSimilarity = featureConsistency.reduce((a, b) => a + b, 0) / featureConsistency.length
   const variance =
     featureConsistency.reduce((sum, sim) => sum + Math.pow(sim - meanSimilarity, 2), 0) / featureConsistency.length
-  const confidenceScore = Math.max(0, 1 - variance) // Lower variance = higher confidence
+  const confidenceScore = Math.max(0, 1 - variance * 2) // More strict confidence calculation
 
   return {
     overallSimilarity,
@@ -293,7 +303,7 @@ export function extractFeaturesFromAudioBuffer(audioBuffer: AudioBuffer): VoiceF
     const frame = audioData.slice(i, i + FRAME_SIZE)
 
     // Extract features for this frame
-    const frameFeatures = Meyda.extract(ALL_FEATURES, frame) as VoiceFeatures
+    const frameFeatures = Meyda.extract(ALL_FEATURES as any, frame) as VoiceFeatures
     features.push(frameFeatures)
   }
 
@@ -526,7 +536,7 @@ export async function processVoiceAudio(blob: Blob): Promise<{
     }
   } catch (error) {
     console.error("Error processing voice audio:", error)
-    throw new Error("Failed to process voice audio: " + error.message)
+    throw new Error("Failed to process voice audio: " + (error instanceof Error ? error.message : String(error)))
   }
 }
 
@@ -549,46 +559,60 @@ function extractFeaturesFromAudioBufferFast(audioBuffer: AudioBuffer, frameSize 
     const frame = audioData.slice(startIdx, startIdx + frameSize)
 
     try {
-      // Extract features using Meyda
+      // Extract features using Meyda - MUST succeed for valid features
       const mfcc = Meyda.extract("mfcc", frame) as number[]
       const spectralCentroid = Meyda.extract("spectralCentroid", frame) as number
       const spectralFlatness = Meyda.extract("spectralFlatness", frame) as number
+      const spectralRolloff = Meyda.extract("spectralRolloff", frame) as number
       const zcr = Meyda.extract("zcr", frame) as number
       const rms = Meyda.extract("rms", frame) as number
       const energy = Meyda.extract("energy", frame) as number
 
+      // Validate that we got real features, not null/undefined
+      if (
+        !mfcc ||
+        !Array.isArray(mfcc) ||
+        mfcc.length === 0 ||
+        typeof spectralCentroid !== "number" ||
+        isNaN(spectralCentroid) ||
+        typeof spectralFlatness !== "number" ||
+        isNaN(spectralFlatness) ||
+        typeof zcr !== "number" ||
+        isNaN(zcr) ||
+        typeof rms !== "number" ||
+        isNaN(rms) ||
+        typeof energy !== "number" ||
+        isNaN(energy)
+      ) {
+        console.warn("Invalid features extracted for frame:", i)
+        continue // Skip this frame instead of adding random data
+      }
+
       const completeFeatures: VoiceFeatures = {
-        mfcc: mfcc || new Array(13).fill(0),
-        spectralCentroid: spectralCentroid || 0,
-        spectralFlatness: spectralFlatness || 0,
-        spectralRolloff: 0, // Simplified for speed
-        spectralFlux: 0, // Simplified for speed
-        perceptualSpread: 0, // Simplified for speed
-        perceptualSharpness: 0, // Simplified for speed
-        spectralKurtosis: 0, // Simplified for speed
-        zcr: zcr || 0,
-        rms: rms || 0,
-        energy: energy || 0,
+        mfcc: mfcc,
+        spectralCentroid: spectralCentroid,
+        spectralFlatness: spectralFlatness,
+        spectralRolloff: spectralRolloff || 0,
+        spectralFlux: 0, // Will be calculated if needed
+        perceptualSpread: 0, // Will be calculated if needed
+        perceptualSharpness: 0, // Will be calculated if needed
+        spectralKurtosis: 0, // Will be calculated if needed
+        zcr: zcr,
+        rms: rms,
+        energy: energy,
       }
 
       features.push(completeFeatures)
     } catch (error) {
       console.warn("Error extracting features for frame:", i, error)
-      // Add a default feature set if extraction fails
-      features.push({
-        mfcc: new Array(13).fill(Math.random() * 0.1), // Small random values for demo
-        spectralCentroid: 1000 + Math.random() * 500,
-        spectralFlatness: Math.random() * 0.5,
-        spectralRolloff: 2000 + Math.random() * 1000,
-        spectralFlux: Math.random() * 0.1,
-        perceptualSpread: Math.random() * 0.5,
-        perceptualSharpness: Math.random() * 0.5,
-        spectralKurtosis: Math.random() * 2,
-        zcr: Math.random() * 0.1,
-        rms: Math.random() * 0.1,
-        energy: Math.random() * 0.1,
-      })
+      // DO NOT add random features - just skip this frame
+      continue
     }
+  }
+
+  // Ensure we have enough valid features
+  if (features.length < 5) {
+    throw new Error(`Insufficient valid features extracted: ${features.length}. Audio quality may be too poor.`)
   }
 
   return features
@@ -634,9 +658,9 @@ export async function quickProcessVoiceAudio(blob: Blob): Promise<boolean> {
   try {
     console.log("Quick validation - blob size:", blob.size, "bytes")
 
-    // Very basic validation - just check if blob exists and has reasonable size
-    if (!blob || blob.size < 1000) {
-      // Very low threshold - 1KB
+    // More strict validation
+    if (!blob || blob.size < 10000) {
+      // Increased from 1KB to 10KB
       console.log("Blob too small:", blob.size)
       return false
     }
@@ -651,25 +675,25 @@ export async function quickProcessVoiceAudio(blob: Blob): Promise<boolean> {
       const audioBuffer = await blobToAudioBuffer(blob)
       console.log("Audio buffer - duration:", audioBuffer.duration, "channels:", audioBuffer.numberOfChannels)
 
-      // Very permissive duration check
-      if (audioBuffer.duration < 0.5) {
-        // At least 0.5 seconds
+      // More strict duration check
+      if (audioBuffer.duration < 1.0) {
+        // Increased from 0.5 to 1.0 seconds
         console.log("Audio too short:", audioBuffer.duration)
         return false
       }
 
-      // Just check if we can get audio data
+      // More strict audio data validation
       const audioData = audioBuffer.getChannelData(0)
 
-      // Very basic validation - just check if there's some audio data
-      if (audioData.length < 512) {
+      if (audioData.length < 2048) {
+        // Increased from 512
         console.log("Audio data too short:", audioData.length)
         return false
       }
 
-      // Very permissive RMS check
+      // More strict RMS check
       let rms = 0
-      const sampleSize = Math.min(2048, audioData.length)
+      const sampleSize = Math.min(4096, audioData.length) // Increased sample size
       for (let i = 0; i < sampleSize; i++) {
         rms += audioData[i] * audioData[i]
       }
@@ -677,20 +701,42 @@ export async function quickProcessVoiceAudio(blob: Blob): Promise<boolean> {
 
       console.log("RMS level:", rms)
 
-      // Very low threshold - almost any audio should pass
-      const isValid = rms > 0.0001 // Extremely low threshold
+      // Much higher threshold - require actual speech levels
+      const isValid = rms > 0.001 // Increased from 0.0001 to 0.001
       console.log("Audio validation result:", isValid)
+
+      // Additional validation - check for actual voice characteristics
+      if (isValid) {
+        try {
+          // Try to extract at least some basic features to ensure it's processable
+          Meyda.bufferSize = 512
+          const testFrame = audioData.slice(0, 512)
+          const testMfcc = Meyda.extract("mfcc", testFrame) as number[]
+
+          if (!testMfcc || !Array.isArray(testMfcc) || testMfcc.length === 0) {
+            console.log("Cannot extract MFCC features from audio")
+            return false
+          }
+
+          // Check if MFCC values are reasonable (not all zeros or NaN)
+          const validMfcc = testMfcc.some((val) => !isNaN(val) && Math.abs(val) > 0.001)
+          if (!validMfcc) {
+            console.log("MFCC features are invalid")
+            return false
+          }
+        } catch (featureError) {
+          console.log("Feature extraction test failed:", featureError)
+          return false
+        }
+      }
 
       return isValid
     } catch (audioError) {
       console.error("Audio processing error:", audioError)
-      // If we can't process the audio, assume it's still valid
-      // This is very permissive - we're accepting almost anything
-      return true
+      return false // Changed from true to false - be strict
     }
   } catch (error) {
     console.error("Quick processing failed:", error)
-    // Even if validation fails, be permissive
-    return true
+    return false // Changed from true to false - be strict
   }
 }
